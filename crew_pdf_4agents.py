@@ -574,28 +574,22 @@ Do not add new information. {rule}""",
 # ==========================================
 # Mode E: อ่านและอธิบายไฟล์ (อ่านทีละส่วน → สังเคราะห์)
 # ==========================================
-def run_mode_e():
-    print("\n==========================================")
-    print(" Mode E: อ่านและอธิบายไฟล์")
-    print("==========================================")
-    path = input("📁 พิมพ์ชื่อหรือพาธไฟล์ (ไฟล์ข้อความ/โค้ด หรือ PDF): ").strip().strip('"')
-    if not path:
-        return
+def explain_file(path, language="Thai", detail="short", model="qwen2.5:7b-instruct"):
+    if language not in ("Thai", "English"):
+        raise ValueError("language must be Thai or English")
+    if detail not in ("short", "detailed"):
+        raise ValueError("detail must be short or detailed")
     if not os.path.isfile(path):
-        print(f"❌ ไม่พบไฟล์ '{path}' หรือพาธนี้ไม่ใช่ไฟล์")
-        return
+        raise FileNotFoundError(f"File not found: {path}")
 
-    print(f"📄 กำลังอ่านไฟล์ {path}...")
-    try:
-        content = read_document(path)
-    except ValueError as ex:
-        print(f"❌ {ex}")
-        return
+    content = read_document(path)
     if not content.strip():
-        print(f"❌ ไม่พบข้อความที่อ่านได้ในไฟล์ '{path}'")
-        return
+        raise ValueError(f"No readable text found in file: {path}")
 
-    s = get_runtime_settings()
+    model_name = next((name for value, name in MODELS.values() if value == model), None)
+    if model_name is None:
+        raise ValueError(f"Unsupported model: {model}")
+    s = {"model": model, "model_name": model_name, "language": language, "detail": detail}
     llm = make_llm(s, temperature=0.2)
     kind = "code" if os.path.splitext(path)[1].lower() in CODE_EXTS else "document"
     material = condense(content, llm, s, kind)
@@ -637,7 +631,27 @@ Rules:
         expected_output="An explanation of the file organized under the listed sections.",
         agent=explainer)
 
-    result = run_crew([explainer], [t_explain])
+    return run_crew([explainer], [t_explain])
+
+
+def run_mode_e():
+    print("\n==========================================")
+    print(" Mode E: อ่านและอธิบายไฟล์")
+    print("==========================================")
+    path = input("📁 พิมพ์ชื่อหรือพาธไฟล์ (ไฟล์ข้อความ/โค้ด หรือ PDF): ").strip().strip('"')
+    if not path:
+        return
+    if not os.path.isfile(path):
+        print(f"❌ ไม่พบไฟล์ '{path}' หรือพาธนี้ไม่ใช่ไฟล์")
+        return
+
+    print(f"📄 กำลังอ่านไฟล์ {path}...")
+    s = get_runtime_settings()
+    try:
+        result = explain_file(path, s["language"], s["detail"], s["model"])
+    except ValueError as ex:
+        print(f"❌ {ex}")
+        return
     save_output("file_explanation", result, s)
 
 

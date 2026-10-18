@@ -272,6 +272,25 @@ docker exec -it ollama ollama pull qwen2.5:7b-instruct
 
 ## MCP และ Continue
 
-การใช้งานตามคู่มือนี้ไม่เรียก MCP และไม่ส่งงานให้ Continue Agent
-ไม่จำเป็นต้องเพิ่มหรือเปิด MCP server เพื่อรัน `crew_pdf_4agents.py`
-ให้เปิด VS Code Terminal แล้วสั่ง Python ตามขั้นตอนด้านบน
+การรันโปรแกรมจาก Terminal ยังไม่จำเป็นต้องใช้ MCP แต่สามารถเชื่อม Continue Agent
+กับ MCP server ของโปรเจกต์เพื่อเรียกเครื่องมือ `explain_file` ได้ โดย server จะอ่าน
+ได้เฉพาะไฟล์ภายในโฟลเดอร์โปรเจกต์ และใช้ Ollama ตามการตั้งค่าของโปรแกรม
+
+หลังติดตั้ง dependencies และเตรียม Ollama ตามขั้นตอนด้านบน ให้เพิ่ม MCP server
+ต่อไปนี้ใน Continue config ที่ `C:\Users\<ชื่อผู้ใช้>\.continue\config.yaml`
+โดยแทน `C:\path\to\project` ด้วยพาธจริงของโฟลเดอร์โปรเจกต์:
+
+```yaml
+mcpServers:
+  - name: CrewAI Local
+    command: 'C:\path\to\project\.venv\Scripts\python.exe'
+    args:
+      - 'C:\path\to\project\mcp_server.py'
+    env:
+      WORKSPACE_ROOT: 'C:\path\to\project'
+      CREW_VERBOSE: '0'
+```
+
+จากนั้นเริ่ม Continue ใหม่ เครื่องมือรับพาธไฟล์แบบ relative ต่อโฟลเดอร์โปรเจกต์
+และเลือกภาษา `Thai` หรือ `English` กับระดับรายละเอียด `short` หรือ `detailed` ได้
+การเรียก MCP ต้องมี Ollama ทำงานและมีโมเดล Qwen ที่ต้องการอยู่ในเครื่องแล้ว
