@@ -49,6 +49,28 @@ VS Code Terminal -> Python / CrewAI -> Ollama API -> Ollama ใน Docker -> Qwe
 
 หากไม่ต้องการใช้สคริปต์ตั้งค่า ให้ทำตามขั้นตอน Manual ด้านล่างต่อได้
 
+## รันแอป Python ใน Docker
+
+Dockerfile นี้ใช้รันแอป Python เท่านั้น ส่วน Ollama ยังคงทำงานแยกใน container ของ Ollama
+ให้เริ่ม Ollama และดาวน์โหลดโมเดลตามขั้นตอนด้านล่างก่อน จากนั้น build image ที่โฟลเดอร์โปรเจกต์:
+
+```powershell
+docker build -t crewai-local .
+```
+
+รันแอปแบบ interactive โดย mount โฟลเดอร์โปรเจกต์ไว้ใน container เพื่อให้เลือกอ่าน PDF
+และบันทึกไฟล์ผลลัพธ์ลงในเครื่องได้:
+
+```powershell
+docker run --rm -it --add-host=host.docker.internal:host-gateway `
+  -e OLLAMA_URL=http://host.docker.internal:11434 `
+  -v "${PWD}:/app" -w /app crewai-local
+```
+
+พิมพ์ `X` ในเมนูเพื่อออกจากโปรแกรมและลบ container ชั่วคราว
+ไม่ต้อง publish พอร์ตของแอป เพราะโปรแกรมทำงานผ่าน Terminal
+โฟลเดอร์ `.venv`, `.git`, ไฟล์ PDF และไฟล์ `.env` จะไม่ถูกรวมใน image
+
 ## Manual: 1. เริ่ม Ollama ใน Docker
 
 เปิด Docker Desktop และรอให้ Docker ทำงาน จากนั้นเปิด PowerShell หรือ VS Code Terminal
