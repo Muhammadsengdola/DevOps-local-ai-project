@@ -51,25 +51,34 @@ VS Code Terminal -> Python / CrewAI -> Ollama API -> Ollama ใน Docker -> Qwe
 
 ## รันแอป Python ใน Docker
 
-Dockerfile นี้ใช้รันแอป Python เท่านั้น ส่วน Ollama ยังคงทำงานแยกใน container ของ Ollama
-ให้เริ่ม Ollama และดาวน์โหลดโมเดลตามขั้นตอนด้านล่างก่อน จากนั้น build image ที่โฟลเดอร์โปรเจกต์:
+ใช้ Docker Compose เพื่อเริ่ม Ollama และแอป Python ในชุดเดียวกัน โดย Ollama จะเก็บโมเดลไว้ใน
+volume ถาวรชื่อ `ollama_data` เปิด Terminal ที่โฟลเดอร์โปรเจกต์แล้ว build image และเริ่ม Ollama:
 
 ```powershell
-docker build -t crewai-local .
+docker compose build
+docker compose up -d ollama
 ```
 
-รันแอปแบบ interactive โดย mount โฟลเดอร์โปรเจกต์ไว้ใน container เพื่อให้เลือกอ่าน PDF
-และบันทึกไฟล์ผลลัพธ์ลงในเครื่องได้:
+ดาวน์โหลดโมเดลที่ต้องการครั้งแรก:
 
 ```powershell
-docker run --rm -it --add-host=host.docker.internal:host-gateway `
-  -e OLLAMA_URL=http://host.docker.internal:11434 `
-  -v "${PWD}:/app" -w /app crewai-local
+docker compose exec ollama ollama pull qwen2.5:7b-instruct
+docker compose exec ollama ollama pull qwen2.5:14b-instruct
 ```
 
-พิมพ์ `X` ในเมนูเพื่อออกจากโปรแกรมและลบ container ชั่วคราว
-ไม่ต้อง publish พอร์ตของแอป เพราะโปรแกรมทำงานผ่าน Terminal
-โฟลเดอร์ `.venv`, `.git`, ไฟล์ PDF และไฟล์ `.env` จะไม่ถูกรวมใน image
+เริ่มแอปแบบ interactive:
+
+```powershell
+docker compose run --rm app
+```
+
+โฟลเดอร์โปรเจกต์จะถูก mount ใน container เพื่อให้อ่าน PDF และบันทึกผลลัพธ์ลงในเครื่อง
+พิมพ์ `X` ในเมนูเพื่อออกจากแอป Ollama จะยังทำงานอยู่เบื้องหลัง
+เมื่อไม่ต้องการใช้งานแล้วให้หยุด services ด้วย `docker compose down`
+คำสั่งนี้ไม่ลบโมเดลใน volume
+
+ไม่จำเป็นต้อง publish พอร์ตแอป เพราะโปรแกรมทำงานผ่าน Terminal
+โฟลเดอร์ `.venv`, `.git`, PDF และ `.env` จะไม่ถูกรวมใน image
 
 ## Manual: 1. เริ่ม Ollama ใน Docker
 
