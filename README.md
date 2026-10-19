@@ -51,34 +51,23 @@ VS Code Terminal -> Python / CrewAI -> Ollama API -> Ollama ใน Docker -> Qwe
 
 ## รันแอป Python ใน Docker
 
-ใช้ Docker Compose เพื่อเริ่ม Ollama และแอป Python ในชุดเดียวกัน โดย Ollama จะเก็บโมเดลไว้ใน
-volume ถาวรชื่อ `ollama_data` เปิด Terminal ที่โฟลเดอร์โปรเจกต์แล้ว build image และเริ่ม Ollama:
+ใช้ Docker Compose เพื่อเชื่อมแอป Python กับ Ollama โดย Compose จะดาวน์โหลดโมเดลทั้งสองรุ่น
+ให้อัตโนมัติก่อนเปิดเมนูแอปในการใช้งานครั้งแรก โมเดลเก็บอยู่ใน volume ถาวรชื่อ `ollama_data`
+เปิด Terminal ที่โฟลเดอร์โปรเจกต์ แล้ว build image และเปิดแอป:
 
 ```powershell
 docker compose build
-docker compose up -d ollama
-```
-
-ดาวน์โหลดโมเดลที่ต้องการครั้งแรก:
-
-```powershell
-docker compose exec ollama ollama pull qwen2.5:7b-instruct
-docker compose exec ollama ollama pull qwen2.5:14b-instruct
-```
-
-เริ่มแอปแบบ interactive:
-
-```powershell
 docker compose run --rm app
 ```
 
-โฟลเดอร์โปรเจกต์จะถูก mount ใน container เพื่อให้อ่าน PDF และบันทึกผลลัพธ์ลงในเครื่อง
-พิมพ์ `X` ในเมนูเพื่อออกจากแอป Ollama จะยังทำงานอยู่เบื้องหลัง
-เมื่อไม่ต้องการใช้งานแล้วให้หยุด services ด้วย `docker compose down`
-คำสั่งนี้ไม่ลบโมเดลใน volume
+คำสั่งนี้จะเริ่ม Ollama, ดาวน์โหลด `qwen2.5:7b-instruct` และ `qwen2.5:14b-instruct`
+ถ้ายังไม่มีใน volume แล้วจึงเปิดเมนูแอป การดาวน์โหลดครั้งแรกอาจใช้เวลานานและต้องมีพื้นที่ว่าง
+เพียงพอ ครั้งต่อไปจะใช้โมเดลที่เก็บไว้แล้ว โฟลเดอร์โปรเจกต์ถูก mount ใน container
+เพื่อให้อ่าน PDF และบันทึกผลลัพธ์ลงในเครื่องได้
 
-ไม่จำเป็นต้อง publish พอร์ตแอป เพราะโปรแกรมทำงานผ่าน Terminal
-โฟลเดอร์ `.venv`, `.git`, PDF และ `.env` จะไม่ถูกรวมใน image
+พิมพ์ `X` ในเมนูเพื่อออกจากแอป จากนั้นหยุด Ollama ด้วย `docker compose down`
+คำสั่งนี้ไม่ลบโมเดลใน volume หากต้องการเรียก Ollama จาก Windows โดยตรง พอร์ต `11434`
+จะถูก publish ไว้ด้วย
 
 ## Manual: 1. เริ่ม Ollama ใน Docker
 
